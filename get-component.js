@@ -1,30 +1,29 @@
-import fetch from "node-fetch";
+from flask import Flask, request, jsonify
+import requests
 
-export default async function handler(req, res) {
-    // URL del file JSON remoto
-    const jsonUrl = "https://raw.githubusercontent.com/michele9812/Accessibility/main/Visualreference.json";
+app = Flask(__name__)
 
-    // Leggi il parametro della query
-    const { component_name } = req.query;
+# URL del JSON pubblico su GitHub
+JSON_URL = "https://raw.githubusercontent.com/michele9812/Accessibility/main/Visualreference.json"
 
-    if (!component_name) {
-        return res.status(400).json({ error: "Il parametro 'component_name' è obbligatorio." });
-    }
+@app.route("/get-reference", methods=["GET"])
+def get_reference():
+    component_name = request.args.get("component_name")
+    if not component_name:
+        return jsonify({"error": "Il parametro 'component_name' è obbligatorio"}), 400
 
-    // Scarica il file JSON
-    const response = await fetch(jsonUrl);
-    if (!response.ok) {
-        return res.status(500).json({ error: "Impossibile scaricare il file JSON." });
-    }
+    # Scarica il file JSON
+    response = requests.get(JSON_URL)
+    if response.status_code != 200:
+        return jsonify({"error": "Impossibile scaricare il file JSON"}), 500
 
-    const components = await response.json();
+    # Cerca il componente
+    components = response.json()
+    for component in components:
+        if component["name"].lower() == component_name.lower():
+            return jsonify(component)
 
-    // Cerca il componente richiesto
-    const component = components.find(c => c.name.toLowerCase() === component_name.toLowerCase());
-    if (!component) {
-        return res.status(404).json({ error: "Componente non trovato." });
-    }
+    return jsonify({"error": "Componente non trovato"}), 404
 
-    // Restituisci il componente trovato
-    return res.status(200).json(component);
-}
+if __name__ == "__main__":
+    app.run(debug=True)
