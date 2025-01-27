@@ -1,3 +1,8 @@
+export default async function handler(req, res) {
+    // Risponde con un messaggio di test
+    res.status(200).json({ message: "Funzione API attiva!" });
+}
+
 import fetch from "node-fetch";
 
 export default async function handler(req, res) {
