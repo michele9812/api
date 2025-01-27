@@ -28,6 +28,3 @@ export default async function handler(req, res) {
     // Restituisci il componente trovato
     return res.status(200).json(component);
 }
-module.exports = {
-  distDir: 'build',
-}
